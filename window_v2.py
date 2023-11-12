@@ -1,8 +1,9 @@
 from tkinter import *
-from PIL import Image,ImageTk
+from PIL import Image, ImageTk
 import os
 from draw_super_pixel import ShadowSuperPixel
 import numpy as np
+
 
 class ShadowLabeler():
     def __init__(self, image_root, args):
@@ -31,13 +32,13 @@ class ShadowLabeler():
                                    borderwidth=4)
         self.frame_buttons.pack(side="top", anchor=N, fill=BOTH, ipady=2, expand=False)
 
-
         self.frame_label = Frame(self.master, height=1280, width=720, relief=RIDGE, bg='grey', bd=5, borderwidth=4)
-        self.frame_label.pack(side="left",anchor=N, fill=BOTH, ipady=2, expand=False)
+        self.frame_label.pack(side="left", anchor=N, fill=BOTH, ipady=2, expand=False)
         self.canves = Canvas(self.frame_label, width=1280, height=720)
         self.canves.pack()
 
-        self.frame_label_result = Frame(self.master, height=1280, width=720, relief=RIDGE, bg='grey', bd=5, borderwidth=4)
+        self.frame_label_result = Frame(self.master, height=1280, width=720, relief=RIDGE, bg='grey', bd=5,
+                                        borderwidth=4)
         self.frame_label_result.pack(side="right", anchor=N, fill=BOTH, ipady=2, expand=False)
         self.canves_result = Canvas(self.frame_label_result, width=1280, height=720)
         self.canves_result.pack()
@@ -126,7 +127,9 @@ class ShadowLabeler():
     def save_shadow_mask(self):
         self.shadow_mask_result = Image.fromarray((255 * self.shadow_mask.mask).astype('uint8'))
         # self.canves_result.itemconfig(self.canves_result_sample, image=ImageTk.PhotoImage(self.shadow_mask_result))
-        splited_name = str(self.image_root[self.image_index][0]).split('/')
+        splited_name = str(self.image_root[self.image_index][0]).split('\\')
+        # splited_name = str(self.image_root[self.image_index][0]).split('/')
+        print(splited_name)
         fold_name, base_name = splited_name[-2], splited_name[-1][:-4]
         mask_path = os.path.join('./label', fold_name)
 
@@ -137,7 +140,7 @@ class ShadowLabeler():
             except:
                 print("Create file failed!")
         try:
-            self.shadow_mask_result.save(os.path.join(mask_path, base_name+'.png'))
+            self.shadow_mask_result.save(os.path.join(mask_path, base_name + '.png'))
             print("Save {0} OK  !!!".format(base_name))
         except:
             print("Save {0} failed !!!".format(base_name))
@@ -148,8 +151,8 @@ class ShadowLabeler():
     def init_frame_label(self):
         # self.frame_label.bind('<Button-1>', self.onLeftButtonDown)
 
-        self.canves_sample = self.canves.create_image(0,0, anchor=NW, image=self.seg_result)
-        self.canves_result_sample = self.canves_result.create_image(0,0, anchor=NW, image=self.label_result)
+        self.canves_sample = self.canves.create_image(0, 0, anchor=NW, image=self.seg_result)
+        self.canves_result_sample = self.canves_result.create_image(0, 0, anchor=NW, image=self.label_result)
         self.canves.bind('<Button-1>', self.onLeftButtonDown)
         self.canves.bind('<Button-3>', self.onRightButtonDown)
         # self.canves.pack()
@@ -160,9 +163,9 @@ class ShadowLabeler():
 
         self.shadow_mask.add_mask(temp_coor)
         self.seg_result = ImageTk.PhotoImage(self.shadow_mask.draw_maskimg())
-        self.canves.itemconfig(self.canves_sample,image = self.seg_result)
+        self.canves.itemconfig(self.canves_sample, image=self.seg_result)
 
-        self.label_result = ImageTk.PhotoImage(Image.fromarray((self.shadow_mask.mask*255).astype('uint8')))
+        self.label_result = ImageTk.PhotoImage(Image.fromarray((self.shadow_mask.mask * 255).astype('uint8')))
         self.canves_result.itemconfig(self.canves_result_sample, image=self.label_result)
 
         self.xy_text.set(str(temp_coor))
@@ -173,17 +176,16 @@ class ShadowLabeler():
         temp_coor = [event.x, event.y]
         self.shadow_mask.sub_mask(temp_coor)
         self.seg_result = ImageTk.PhotoImage(self.shadow_mask.draw_maskimg())
-        self.canves.itemconfig(self.canves_sample,image = self.seg_result)
+        self.canves.itemconfig(self.canves_sample, image=self.seg_result)
         self.label_result = ImageTk.PhotoImage(Image.fromarray((self.shadow_mask.mask * 255).astype('uint8')))
         self.canves_result.itemconfig(self.canves_result_sample, image=self.label_result)
 
         self.xy_text.set(str(temp_coor))
         print(temp_coor)
 
-    #图像分割初始化函数，需要绘制下一张图片时调用
+    # 图像分割初始化函数，需要绘制下一张图片时调用
     def init_image(self):
         print('processing the {}th image'.format(self.image_index))
         self.shadow_mask.forward(self.image_index, self.args)
         self.seg_result = ImageTk.PhotoImage(Image.fromarray(self.shadow_mask.image))
-        self.label_result = ImageTk.PhotoImage(Image.fromarray((self.shadow_mask.mask*255).astype('uint8')))
-
+        self.label_result = ImageTk.PhotoImage(Image.fromarray((self.shadow_mask.mask * 255).astype('uint8')))

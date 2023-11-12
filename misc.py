@@ -1,7 +1,7 @@
 import numpy as np
 import os
 
-# import pydensecrf.densecrf as dcrf
+import pydensecrf.densecrf as dcrf
 
 
 class AvgMeter(object):

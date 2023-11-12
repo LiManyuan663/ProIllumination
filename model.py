@@ -250,4 +250,5 @@ class DSDNet(nn.Module):
             fuse_pred_dst1, pred_down1_dst1, pred_down2_dst1, pred_down3_dst1, pred_down4_dst1,\
             fuse_pred_dst2, pred_down1_dst2, pred_down2_dst2, pred_down3_dst2, pred_down4_dst2, \
                    pred_down0_dst1, pred_down0_dst2, pred_down0_shad
-        return F.sigmoid(fuse_pred_shad)
+        return torch.sigmoid(fuse_pred_shad)
+        # return F.sigmoid(fuse_pred_shad)
