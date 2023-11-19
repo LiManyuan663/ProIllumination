@@ -32,15 +32,19 @@ class ShadowLabeler():
                                    borderwidth=4)
         self.frame_buttons.pack(side="top", anchor=N, fill=BOTH, ipady=2, expand=False)
 
-        self.frame_label = Frame(self.master, height=1280, width=720, relief=RIDGE, bg='grey', bd=5, borderwidth=4)
+
+        w = 1280 /2
+        h = 720/2
+        self.frame_label = Frame(self.master, height=w, width=h, relief=RIDGE, bg='grey', bd=5, borderwidth=4)
         self.frame_label.pack(side="left", anchor=N, fill=BOTH, ipady=2, expand=False)
-        self.canves = Canvas(self.frame_label, width=1280, height=720)
+
+        self.canves = Canvas(self.frame_label, width=w, height=h)
         self.canves.pack()
 
-        self.frame_label_result = Frame(self.master, height=1280, width=720, relief=RIDGE, bg='grey', bd=5,
+        self.frame_label_result = Frame(self.master, height=w, width=h, relief=RIDGE, bg='grey', bd=5,
                                         borderwidth=4)
         self.frame_label_result.pack(side="right", anchor=N, fill=BOTH, ipady=2, expand=False)
-        self.canves_result = Canvas(self.frame_label_result, width=1280, height=720)
+        self.canves_result = Canvas(self.frame_label_result, width=w, height=h)
         self.canves_result.pack()
 
         # 　初始化按钮
