@@ -5,8 +5,8 @@ import sys
 from PyQt5.QtWidgets import QApplication
 
 args = {
-    # 'mask_from_cnn': True,
-    'mask_from_cnn': False,
+    'mask_from_cnn': True,
+    # 'mask_from_cnn': False,
     'super_seg_count': 1000,
     'super_compactness': 10,
     'super_sigma': 1,
@@ -19,7 +19,10 @@ def create_window_v2(image_root, args):
 
 
 def create_window_v3():
-    pass
+    app = QApplication(sys.argv)
+    window = ProIllumination(None)
+    window.show()
+    sys.exit(app.exec_())
 
 
 def sortImg(img_list):
@@ -54,9 +57,9 @@ def read_dataset(dataset_root):
 
 
 if __name__ == "__main__":
-    test_dataset = 'data'
+    test_dataset = './data'
     image_root = read_dataset(dataset_root=test_dataset)
 
     # image_root = ['test/scu.jpg','test/lssd2.jpg']
-    create_window_v2(image_root,args)
+    create_window_v2(image_root, args)
     # create_window_v3()

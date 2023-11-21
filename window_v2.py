@@ -59,6 +59,11 @@ class ShadowLabeler(tkinter.Tk):
         # 　初始化按钮
         self.init_buttons()
 
+    def init_navigator(self):
+        menu = Menu(self.master)
+        for each in ['File','Function']:
+            menu.add_command(label=each)
+
     def init_buttons(self):
         read_image_button = Button(self.frame_buttons, text='Read Image', command=self.init_image_seg)
         read_image_button.pack(side="left", anchor=N)
