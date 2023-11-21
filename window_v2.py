@@ -39,10 +39,13 @@ class ShadowLabeler(tkinter.Tk):
         self.mainloop()
 
     def setup(self):
-        self.frame_buttons = Frame(self.master, height=80, width=60, relief=RIDGE, bg='white', bd=4)
+       #  self.init_navigator()
+        self.frame_buttons = Frame(self, height=80, width=60, relief=RIDGE, bg='white', bd=4)
         self.frame_buttons.pack(side="top", fill=X, ipady=2, expand=False)
+        # 　初始化按钮
+        self.init_buttons()
 
-        frame_canves = Frame(self.master)
+        frame_canves = Frame(self)
         frame_canves.pack(fill=BOTH, expand=True)
 
         frames = []
@@ -56,13 +59,33 @@ class ShadowLabeler(tkinter.Tk):
                 frames.append(frame)
                 self.canvases.append(canvas)
 
-        # 　初始化按钮
-        self.init_buttons()
-
     def init_navigator(self):
-        menu = Menu(self.master)
-        for each in ['File','Function']:
-            menu.add_command(label=each)
+        # 顶级菜单
+        menu = Menu(self)
+
+        # 一级菜单
+        menu_file = Menu(menu, tearoff=False)
+        dic_file = {'Read Image': self.init_image_seg, 'Reload Image': self.reload_image_seg, 'separator': None,
+                    'Reload Video': self.reload_video, 'Next Video': self.next_video}
+        for k, v in dic_file.items():
+            if k == 'separator':
+                menu_file.add_separator()
+            else:
+                menu_file.add_command(label=k, command=v)
+
+        # 顶级菜单
+        dic_menu = {'File': menu_file}
+        for k, v in dic_menu.items():
+            menu.add_cascade(label=k, menu=v)
+        self['menu'] = menu
+        #
+        # # 设置超像素分割的细粒度的滑块
+        # self.s_super_pixel = Scale(menu, from_=50, to=3000, label='超像素分割细粒度',
+        #                            length=300,
+        #                            orient=HORIZONTAL, command=self.set_super_n_segement)
+        # self.s_super_pixel.set(1500)
+        # # self.s_super_pixel.place(x=150, y=50)
+        # self.s_super_pixel.pack(side="left", anchor=N)
 
     def init_buttons(self):
         read_image_button = Button(self.frame_buttons, text='Read Image', command=self.init_image_seg)
