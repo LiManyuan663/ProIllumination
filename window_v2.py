@@ -1,15 +1,15 @@
+import tkinter
 from tkinter import *
 from PIL import Image, ImageTk
 import os
 from draw_super_pixel import ShadowSuperPixel
-import numpy as np
 
 
-class ShadowLabeler():
+class ShadowLabeler(tkinter.Tk):
     def __init__(self, image_root, args):
-        self.master = Tk()
-        self.master.geometry("1280x720")
-        self.master.title("Label Shadow")
+        super().__init__()
+        self.geometry('1280x960')
+        self.title("Label Shadow")
 
         # 参数
         self.args = args
@@ -28,29 +28,36 @@ class ShadowLabeler():
         # 显示鼠标坐标
         self.xy_text = StringVar()
 
-        self.frame_buttons = Frame(self.master, height=80, width=60, relief=RIDGE, bg='white', bd=5,
-                                   borderwidth=4)
-        self.frame_buttons.pack(side="top", anchor=N, fill=BOTH, ipady=2, expand=False)
+        # 设置组件
+        self.frame_buttons = None
+        self.canvases = []  # 顺时针[canvas,canvas,canvas,canvas] 0->1->2->3
+        self.setup()
 
+        # photo = ImageTk.PhotoImage(Image.open('./1.png'))
+        # self.canvases[0].create_image(0, 0, anchor=NW, image=photo)  # 不能写一块
 
-        w = 1280 /2
-        h = 720/2
-        self.frame_label = Frame(self.master, height=w, width=h, relief=RIDGE, bg='grey', bd=5, borderwidth=4)
-        self.frame_label.pack(side="left", anchor=N, fill=BOTH, ipady=2, expand=False)
+        self.mainloop()
 
-        self.canves = Canvas(self.frame_label, width=w, height=h)
-        self.canves.pack()
+    def setup(self):
+        self.frame_buttons = Frame(self.master, height=80, width=60, relief=RIDGE, bg='white', bd=4)
+        self.frame_buttons.pack(side="top", fill=X, ipady=2, expand=False)
 
-        self.frame_label_result = Frame(self.master, height=w, width=h, relief=RIDGE, bg='grey', bd=5,
-                                        borderwidth=4)
-        self.frame_label_result.pack(side="right", anchor=N, fill=BOTH, ipady=2, expand=False)
-        self.canves_result = Canvas(self.frame_label_result, width=w, height=h)
-        self.canves_result.pack()
+        frame_canves = Frame(self.master)
+        frame_canves.pack(fill=BOTH, expand=True)
+
+        frames = []
+        anchors = [NW, NE, SW, SE]
+        for j in range(2):
+            for i in range(2):
+                frame = Frame(frame_canves, relief=RIDGE, bg='gray', bd=4)
+                frame.place(relwidth=0.5, relheight=0.5, relx=i, rely=j, anchor=anchors[j * 2 + i])
+                canvas = Canvas(frame)
+                canvas.pack(fill=BOTH, expand=True)
+                frames.append(frame)
+                self.canvases.append(canvas)
 
         # 　初始化按钮
         self.init_buttons()
-
-        self.master.mainloop()
 
     def init_buttons(self):
         read_image_button = Button(self.frame_buttons, text='Read Image', command=self.init_image_seg)
@@ -155,11 +162,11 @@ class ShadowLabeler():
     def init_frame_label(self):
         # self.frame_label.bind('<Button-1>', self.onLeftButtonDown)
 
-        self.canves_sample = self.canves.create_image(0, 0, anchor=NW, image=self.seg_result)
-        self.canves_result_sample = self.canves_result.create_image(0, 0, anchor=NW, image=self.label_result)
-        self.canves.bind('<Button-1>', self.onLeftButtonDown)
-        self.canves.bind('<Button-3>', self.onRightButtonDown)
-        # self.canves.pack()
+        self.canves_sample = self.canvases[0].create_image(0, 0, anchor=NW, image=self.seg_result)
+        self.canves_result_sample = self.canvases[1].create_image(0, 0, anchor=NW, image=self.label_result)
+        self.canvases[0].bind('<Button-1>', self.onLeftButtonDown)
+        self.canvases[0].bind('<Button-3>', self.onRightButtonDown)
+        # self.canvases[0].pack()
 
     def onLeftButtonDown(self, event):
 
@@ -167,10 +174,10 @@ class ShadowLabeler():
 
         self.shadow_mask.add_mask(temp_coor)
         self.seg_result = ImageTk.PhotoImage(self.shadow_mask.draw_maskimg())
-        self.canves.itemconfig(self.canves_sample, image=self.seg_result)
+        self.canvases[0].itemconfig(self.canves_sample, image=self.seg_result)
 
         self.label_result = ImageTk.PhotoImage(Image.fromarray((self.shadow_mask.mask * 255).astype('uint8')))
-        self.canves_result.itemconfig(self.canves_result_sample, image=self.label_result)
+        self.canvases[1].itemconfig(self.canves_result_sample, image=self.label_result)
 
         self.xy_text.set(str(temp_coor))
         print(temp_coor)
@@ -180,9 +187,9 @@ class ShadowLabeler():
         temp_coor = [event.x, event.y]
         self.shadow_mask.sub_mask(temp_coor)
         self.seg_result = ImageTk.PhotoImage(self.shadow_mask.draw_maskimg())
-        self.canves.itemconfig(self.canves_sample, image=self.seg_result)
+        self.canvases[0].itemconfig(self.canves_sample, image=self.seg_result)
         self.label_result = ImageTk.PhotoImage(Image.fromarray((self.shadow_mask.mask * 255).astype('uint8')))
-        self.canves_result.itemconfig(self.canves_result_sample, image=self.label_result)
+        self.canvases[1].itemconfig(self.canves_result_sample, image=self.label_result)
 
         self.xy_text.set(str(temp_coor))
         print(temp_coor)
