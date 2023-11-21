@@ -1,15 +1,15 @@
-import tkinter
 from tkinter import *
 from PIL import Image, ImageTk
 import os
 from draw_super_pixel import ShadowSuperPixel
+import numpy as np
 
 
-class ShadowLabeler(tkinter.Tk):
+class ShadowLabeler():
     def __init__(self, image_root, args):
-        super().__init__()
-        self.geometry('1280x960')
-        self.title("Label Shadow")
+        self.master = Tk()
+        self.master.geometry("1280x720")
+        self.master.title("Label Shadow")
 
         # 参数
         self.args = args
@@ -28,32 +28,29 @@ class ShadowLabeler(tkinter.Tk):
         # 显示鼠标坐标
         self.xy_text = StringVar()
 
-        # 设置组件
-        self.frame_buttons = None
-        self.canvases = None
-        self.setup()
+        self.frame_buttons = Frame(self.master, height=80, width=60, relief=RIDGE, bg='white', bd=5,
+                                   borderwidth=4)
+        self.frame_buttons.pack(side="top", anchor=N, fill=BOTH, ipady=2, expand=False)
 
-        self.mainloop()
 
-    def setup(self):
-        self.frame_buttons = Frame(self.master, height=80, width=60, relief=RIDGE, bg='white', bd=4)
-        self.frame_buttons.pack(side="top", fill=X, ipady=2, expand=False)
+        w = 1280 /2
+        h = 720/2
+        self.frame_label = Frame(self.master, height=w, width=h, relief=RIDGE, bg='grey', bd=5, borderwidth=4)
+        self.frame_label.pack(side="left", anchor=N, fill=BOTH, ipady=2, expand=False)
 
-        frame_canves = Frame(self.master)
-        frame_canves.pack(fill=BOTH, expand=True)
+        self.canves = Canvas(self.frame_label, width=w, height=h)
+        self.canves.pack()
 
-        frames, self.canvases = [], []
-        anchors = [NW, SW, NE, SE]
-        for i in range(2):
-            for j in range(2):
-                frame = Frame(frame_canves, relief=RIDGE, bg='gray', bd=4)
-                frame.place(relwidth=0.5, relheight=0.5, relx=i, rely=j, anchor=anchors[i * 2 + j])
-                canvas = Canvas(frame)
-                canvas.pack(fill=BOTH, expand=True)
-                frames.append(frame)
-                self.canvases.append(canvas)
+        self.frame_label_result = Frame(self.master, height=w, width=h, relief=RIDGE, bg='grey', bd=5,
+                                        borderwidth=4)
+        self.frame_label_result.pack(side="right", anchor=N, fill=BOTH, ipady=2, expand=False)
+        self.canves_result = Canvas(self.frame_label_result, width=w, height=h)
+        self.canves_result.pack()
+
         # 　初始化按钮
         self.init_buttons()
+
+        self.master.mainloop()
 
     def init_buttons(self):
         read_image_button = Button(self.frame_buttons, text='Read Image', command=self.init_image_seg)
