@@ -42,9 +42,6 @@ class ShadowLabeler(tkinter.Tk):
         frame_canves = Frame(self.master)
         frame_canves.pack(fill=BOTH, expand=True)
 
-        frame_canves.update()
-        print(frame_canves['height'])
-
         frames, self.canvases = [], []
         anchors = [NW, SW, NE, SE]
         for i in range(2):
