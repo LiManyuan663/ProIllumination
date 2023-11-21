@@ -1,8 +1,10 @@
 import tkinter
 from tkinter import *
+import numpy as np
 from PIL import Image, ImageTk
 import os
 from draw_super_pixel import ShadowSuperPixel
+from illumination.decomposition import decom_single_image
 
 
 class ShadowLabeler(tkinter.Tk):
@@ -73,8 +75,16 @@ class ShadowLabeler(tkinter.Tk):
             else:
                 menu_file.add_command(label=k, command=v)
 
+        menu_func = Menu(menu, tearoff=False)
+        dic_func = {'Intrinsic Decomposition': self.intrinsic_decomposition}
+        for k, v in dic_func.items():
+            if k == 'separator':
+                menu_func.add_separator()
+            else:
+                menu_func.add_command(label=k, command=v)
+
         # 顶级菜单
-        dic_menu = {'File': menu_file}
+        dic_menu = {'File': menu_file, 'Function': menu_func}
         for k, v in dic_menu.items():
             menu.add_cascade(label=k, menu=v)
         self['menu'] = menu
@@ -122,6 +132,19 @@ class ShadowLabeler(tkinter.Tk):
         # self.s_super_pixel.place(x=150, y=50)
         self.s_super_pixel.pack(side="left", anchor=N)
 
+    def intrinsic_decomposition(self):
+        img = Image.open(self.image_root[self.image_index][0])
+        img = np.asarray(img).astype(float) / 255.0
+        img_R, img_S = decom_single_image(img)
+
+        img_R, img_S = np.clip(255 * img_R, 0, 255).astype(np.uint8), np.clip(255 * img_S, 0, 255).astype(np.uint8)
+        img_R, img_S = Image.fromarray(img_R), Image.fromarray(img_S)
+        # 要加self,否则mainloop()阻塞时会回收局部变量，导致找不到图片
+        self.photo_R, self.photo_S = ImageTk.PhotoImage(img_R), ImageTk.PhotoImage(img_S)
+        self.canvases[2].create_image(0, 0, anchor=NW, image=self.photo_R)
+        self.canvases[3].create_image(0, 0, anchor=NW, image=self.photo_S)
+        print('Intrinsic Decomposition have been done.')
+
     def set_super_n_segement(self, event):
         temp_val = self.s_super_pixel.get()
         self.args['super_seg_count'] = temp_val
@@ -130,14 +153,18 @@ class ShadowLabeler(tkinter.Tk):
     def init_image_seg(self):
         # while(1):
         self.image_index += 1
-        self.init_image()
-        # shadow_num = np.sum(self.shadow_mask.mask)
-        # unshadow_num = np.sum(1-1*self.shadow_mask.mask)
-        # # if shadow_num/unshadow_num>0.001:
-        #     break
+        try:
+            self.init_image()
+            # shadow_num = np.sum(self.shadow_mask.mask)
+            # unshadow_num = np.sum(1-1*self.shadow_mask.mask)
+            # # if shadow_num/unshadow_num>0.001:
+            #     break
 
-        self.init_frame_label()
-        self.save_shadow_mask()
+            self.init_frame_label()
+            self.save_shadow_mask()
+        except Exception as e:
+            print('Error: ', e)
+            self.image_index -= 1
 
     def reload_image_seg(self):
         self.init_image()
