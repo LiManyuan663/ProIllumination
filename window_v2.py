@@ -3,14 +3,13 @@ from tkinter import *
 from PIL import Image, ImageTk
 import os
 from draw_super_pixel import ShadowSuperPixel
-import numpy as np
 
 
-class ShadowLabeler():
+class ShadowLabeler(tkinter.Tk):
     def __init__(self, image_root, args):
-        self.master = Tk()
-        self.master.geometry("1280x720")
-        self.master.title("Label Shadow")
+        super().__init__()
+        self.geometry('1280x960')
+        self.title("Label Shadow")
 
         # 参数
         self.args = args
@@ -31,6 +30,7 @@ class ShadowLabeler():
 
         # 设置组件
         self.frame_buttons = None
+        self.canvases = None
         self.setup()
 
         self.mainloop()
@@ -39,13 +39,13 @@ class ShadowLabeler():
         self.frame_buttons = Frame(self.master, height=80, width=60, relief=RIDGE, bg='white', bd=4)
         self.frame_buttons.pack(side="top", fill=X, ipady=2, expand=False)
 
-        frame_canves = Frame(self.master, bg='yellow')
+        frame_canves = Frame(self.master)
         frame_canves.pack(fill=BOTH, expand=True)
 
         frame_canves.update()
         print(frame_canves['height'])
 
-        frames, canvases = [], []
+        frames, self.canvases = [], []
         anchors = [NW, SW, NE, SE]
         for i in range(2):
             for j in range(2):
@@ -54,7 +54,7 @@ class ShadowLabeler():
                 canvas = Canvas(frame)
                 canvas.pack(fill=BOTH, expand=True)
                 frames.append(frame)
-                canvases.append(canvas)
+                self.canvases.append(canvas)
         # 　初始化按钮
         self.init_buttons()
 
