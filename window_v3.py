@@ -1,10 +1,11 @@
 from tkinter import *
 from tkinter import filedialog
 from PIL import Image, ImageTk
+import cv2
 import os
 from draw_super_pixel import ShadowSuperPixel
 import numpy as np
-
+from shadowRemoval.shadow_removal import transferImg
 from illumination.decomposition import decom_single_image
 
 
@@ -121,7 +122,7 @@ class ProIllumination():
         shadow_detect_button = Button(self.frame_buttons, text='Detect Shadow', command=self.detect_shadow)
         shadow_detect_button.pack(side="top", anchor=N, pady=5, fill=X)
 
-        shadow_remove_button = Button(self.frame_buttons, text='Remove Shadow')
+        shadow_remove_button = Button(self.frame_buttons, text='Remove Shadow',command=self.remove_shadow)
         shadow_remove_button.pack(side="top", anchor=N, pady=5, fill=X)
 
         shadow_interact_button = Button(self.frame_buttons, text='Shadow Interact')
@@ -195,6 +196,18 @@ class ProIllumination():
         self.canves.bind('<Button-1>', self.onLeftButtonDown)
         self.canves.bind('<Button-3>', self.onRightButtonDown)
         self.label_result = ImageTk.PhotoImage(Image.fromarray((self.shadow_mask.mask * 255).astype('uint8')))
+        self.canves_result_sample = self.canves_result.create_image(0, 0, anchor=NW, image=self.label_result)
+
+
+    def remove_shadow(self):
+        original_image = cv2.imread(self.image_root)
+        processed_image = transferImg(original_image)
+        # 将NumPy数组转换为PIL Image对象
+        pil_image = Image.fromarray((processed_image * 255).astype('uint8'))
+        # 将PIL Image对象转换为Tkinter PhotoImage对象
+        self.label_result = ImageTk.PhotoImage(pil_image)
+
+        # 在Canvas上显示处理后的图像
         self.canves_result_sample = self.canves_result.create_image(0, 0, anchor=NW, image=self.label_result)
 
     def reload_image_seg(self):

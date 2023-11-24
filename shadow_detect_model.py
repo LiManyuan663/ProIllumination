@@ -34,7 +34,7 @@ class DSDShadowDetection(nn.Module):
 
 
 if __name__ == '__main__':
-    path = './test/scu.jpg'
+    path = './test/chaomian.jpg'
     input = Image.open(path)
     net = DSDShadowDetection()
     premask = net(input)
