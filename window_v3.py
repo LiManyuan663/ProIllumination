@@ -162,7 +162,7 @@ class ProIllumination():
     #     self.save_shadow_mask()
 
     def intrinsic_decomposition(self):
-        img = Image.open(self.image_root[self.image_index][0])
+        img = Image.open(self.image_root)
         img = np.asarray(img).astype(float) / 255.0
         img_R, img_S = decom_single_image(img)
 
