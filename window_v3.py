@@ -5,7 +5,7 @@ import cv2
 import os
 from draw_super_pixel import ShadowSuperPixel
 import numpy as np
-from shadowRemoval.shadow_removal import transferImg
+from shadowRemoval.predict import predict_remove_shadow
 from illumination.decomposition import decom_single_image
 
 
@@ -200,13 +200,14 @@ class ProIllumination():
 
 
     def remove_shadow(self):
-        original_image = cv2.imread(self.image_root)
-        processed_image = transferImg(original_image)
-        # 将NumPy数组转换为PIL Image对象
-        pil_image = Image.fromarray((processed_image * 255).astype('uint8'))
-        # 将PIL Image对象转换为Tkinter PhotoImage对象
+        # original_image = cv2.imread(self.image_root)
+        # processed_image = transferImg(original_image)
+        # # 将NumPy数组转换为PIL Image对象
+        # pil_image = Image.fromarray((processed_image * 255).astype('uint8'))
+        # # 将PIL Image对象转换为Tkinter PhotoImage对象
+        result = predict_remove_shadow(self.image_root)
+        pil_image = Image.fromarray((result * 255).astype('uint8'))
         self.label_result = ImageTk.PhotoImage(pil_image)
-
         # 在Canvas上显示处理后的图像
         self.canves_result_sample = self.canves_result.create_image(0, 0, anchor=NW, image=self.label_result)
 
