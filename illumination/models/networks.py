@@ -5,11 +5,7 @@ from torch.autograd import Variable
 import numpy as np
 import sys
 from torch.autograd import Function
-import math
-import h5py
 import json
-# from . import resnet1
-import matplotlib.pyplot as plt
 from skimage.transform import resize
 
 

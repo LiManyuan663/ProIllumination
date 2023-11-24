@@ -55,6 +55,32 @@ class ProIllumination():
 
         self.master.mainloop()
 
+    def main_win(self):
+        frame_main = Frame(self.master)
+        frame_main.pack(fill=BOTH, expand=True)
+
+        # 显示原图的窗口
+        self.frame_raw_image = Frame(frame_main, relief=RIDGE, bg='grey', bd=5, borderwidth=4)
+        self.frame_raw_image.place(relwidth=0.5, relheight=0.5, relx=0, rely=0, anchor=NW)
+        self.canves = Canvas(self.frame_raw_image)
+        self.canves.pack(fill=BOTH, expand=True)
+
+        # 创建 frame_label_result 框架
+        self.frame_label_result = Frame(frame_main, relief=RIDGE, bg='grey', bd=5, borderwidth=4)
+        self.frame_label_result.place(relwidth=0.5, relheight=0.5, relx=1, rely=0, anchor=NE)
+        self.canves_result = Canvas(self.frame_label_result)
+        self.canves_result.pack(fill=BOTH, expand=True)
+
+        frame_r = Frame(frame_main, relief=RIDGE, bg='gray', bd=4)
+        frame_r.place(relwidth=0.5, relheight=0.5, relx=0, rely=1, anchor=SW)
+        canvas = Canvas(frame_r)
+        canvas.pack(fill=BOTH, expand=True)
+
+        frame_s = Frame(frame_main, relief=RIDGE, bg='gray', bd=4)
+        frame_s.place(relwidth=0.5, relheight=0.5, relx=1, rely=1, anchor=SE)
+        canvas = Canvas(frame_s)
+        canvas.pack(fill=BOTH, expand=True)
+
     def init_buttons(self):
         # 创建按钮并放置在顶部功能栏中
         read_image_button = Button(self.frame_top, text='Read Image', command=self.update_raw_image)

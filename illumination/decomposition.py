@@ -2,8 +2,6 @@ import cv2
 import numpy as np
 import torch
 from torch.autograd import Variable
-from PIL import Image
-import skimage
 from illumination.models import models
 from illumination.options.train_options import TrainOptions
 from illumination.utils.saw_utils import srgb_to_rgb, rgb_to_chromaticity, resize_img_arr, load_img_arr
