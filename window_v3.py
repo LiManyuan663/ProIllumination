@@ -5,6 +5,9 @@ import os
 from draw_super_pixel import ShadowSuperPixel
 import numpy as np
 
+from illumination.decomposition import decom_single_image
+
+
 class ProIllumination():
     def __init__(self, args):
         self.master = Tk()
@@ -36,19 +39,38 @@ class ProIllumination():
         self.frame_buttons = Frame(self.master, width=200, relief=RIDGE, bg='white', bd=5, borderwidth=4)
         self.frame_buttons.pack(side="left", anchor=N, fill=Y, ipadx=2, expand=False)
 
-        # 显示原图的窗口
-        self.frame_raw_image = Frame(self.master, relief=RIDGE, bg='grey', bd=5, borderwidth=4)
-        self.frame_raw_image.pack(side=LEFT, anchor=N, fill=BOTH, expand=True)
+        # frame_tabs = Frame(self.master, relief=RIDGE,  bd=1)
+        # frame_tabs.pack(side=TOP, fill=X, expand=False)
+        # tab_main = Button(frame_tabs, text='main', command=self.main_win)
+        # tab_main.pack(side=LEFT)
 
+        # 显示框架
+        frame_main = Frame(self.master)
+        frame_main.pack(fill=BOTH, expand=True)
+
+        # 显示原图的窗口
+        self.frame_raw_image = Frame(frame_main, relief=RIDGE, bg='grey', bd=5, borderwidth=4)
+        self.frame_raw_image.place(relwidth=0.5, relheight=0.5, relx=0, rely=0, anchor=NW)
         self.canves = Canvas(self.frame_raw_image)
         self.canves.pack(fill=BOTH, expand=True)
 
         # 创建 frame_label_result 框架
-        self.frame_label_result = Frame(self.master, relief=RIDGE, bg='grey', bd=5, borderwidth=4)
-        self.frame_label_result.pack(side=RIGHT, anchor=N, fill=BOTH, expand=True)
-
+        self.frame_label_result = Frame(frame_main, relief=RIDGE, bg='grey', bd=5, borderwidth=4)
+        self.frame_label_result.place(relwidth=0.5, relheight=0.5, relx=1, rely=0, anchor=NE)
         self.canves_result = Canvas(self.frame_label_result)
         self.canves_result.pack(fill=BOTH, expand=True)
+
+        # 光照估计R
+        self.frame_r = Frame(frame_main, relief=RIDGE, bg='gray', bd=4)
+        self.frame_r.place(relwidth=0.5, relheight=0.5, relx=0, rely=1, anchor=SW)
+        self.canvas_r = Canvas(self.frame_r)
+        self.canvas_r.pack(fill=BOTH, expand=True)
+
+        # 光照估计S
+        self.frame_s = Frame(frame_main, relief=RIDGE, bg='gray', bd=4)
+        self.frame_s.place(relwidth=0.5, relheight=0.5, relx=1, rely=1, anchor=SE)
+        self.canvas_s = Canvas(self.frame_s)
+        self.canvas_s.pack(fill=BOTH, expand=True)
 
         # 初始化按钮
         self.init_buttons()
@@ -96,7 +118,7 @@ class ProIllumination():
         quit_button.pack(side="right", anchor=N)
 
         # 功能按钮放置在左侧功能栏
-        shadow_detect_button = Button(self.frame_buttons, text='Detect Shadow',command = self.detect_shadow)
+        shadow_detect_button = Button(self.frame_buttons, text='Detect Shadow', command=self.detect_shadow)
         shadow_detect_button.pack(side="top", anchor=N, pady=5, fill=X)
 
         shadow_remove_button = Button(self.frame_buttons, text='Remove Shadow')
@@ -105,7 +127,7 @@ class ProIllumination():
         shadow_interact_button = Button(self.frame_buttons, text='Shadow Interact')
         shadow_interact_button.pack(side="top", anchor=N, pady=5, fill=X)
 
-        illu_predict_button = Button(self.frame_buttons, text='Illumination Predict', command=self.reload_image_seg)
+        illu_predict_button = Button(self.frame_buttons, text='Illumination Estimation', command=self.intrinsic_decomposition)
         illu_predict_button.pack(side="top", anchor=N, pady=5, fill=X)
 
         # save_image_button = Button(self.frame_buttons, text='Reload Video', command=self.reload_video)
@@ -138,6 +160,20 @@ class ProIllumination():
     #     self.init_image()
     #     self.init_frame_label()
     #     self.save_shadow_mask()
+
+    def intrinsic_decomposition(self):
+        img = Image.open(self.image_root[self.image_index][0])
+        img = np.asarray(img).astype(float) / 255.0
+        img_R, img_S = decom_single_image(img)
+
+        img_R, img_S = np.clip(255 * img_R, 0, 255).astype(np.uint8), np.clip(255 * img_S, 0, 255).astype(np.uint8)
+        img_R, img_S = Image.fromarray(img_R), Image.fromarray(img_S)
+        # 要加self,否则mainloop()阻塞时会回收局部变量，导致找不到图片
+        self.photo_R, self.photo_S = ImageTk.PhotoImage(img_R), ImageTk.PhotoImage(img_S)
+        self.canvas_r.create_image(0, 0, anchor=NW, image=self.photo_R)
+        self.canvas_s.create_image(0, 0, anchor=NW, image=self.photo_S)
+        print('Intrinsic Decomposition have been done.')
+
     def update_raw_image(self):
         file_path = filedialog.askopenfilename(title="Select a file", filetypes=[("Image files", "*.png;*.jpg;*.jpeg")])
         if file_path:
@@ -155,7 +191,7 @@ class ProIllumination():
             self.shadow_mask = ShadowSuperPixel(image_root, args)
 
     def detect_shadow(self):
-        self.shadow_mask.forward(self.image_root, self.args) # DSD 似乎仍然不行
+        self.shadow_mask.forward(self.image_root, self.args)  # DSD 似乎仍然不行
         self.canves.bind('<Button-1>', self.onLeftButtonDown)
         self.canves.bind('<Button-3>', self.onRightButtonDown)
         self.label_result = ImageTk.PhotoImage(Image.fromarray((self.shadow_mask.mask * 255).astype('uint8')))
@@ -238,6 +274,7 @@ class ProIllumination():
     #     self.shadow_mask.forward(self.image_index, self.args)
     #     self.seg_result = ImageTk.PhotoImage(Image.fromarray(self.shadow_mask.image))
     #     self.label_result = ImageTk.PhotoImage(Image.fromarray((self.shadow_mask.mask * 255).astype('uint8')))
+
 
 if __name__ == "__main__":
     image_root = 'data'
