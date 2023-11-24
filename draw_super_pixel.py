@@ -13,7 +13,7 @@ class ShadowSuperPixel():
         self.mask_from_cnn = args['mask_from_cnn']
 
     def forward(self, image_index, args):
-        self.image = io.imread(self.image_path[image_index][0])
+        self.image = io.imread(image_index)
         self.mask = self.DSD(Image.fromarray(self.image)) == 255
         if len(self.mask.shape) > 2:
             self.seg = slic(rgb2lab(self.image), args['super_seg_count'], args['super_compactness'])
