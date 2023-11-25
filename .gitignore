@@ -118,6 +118,5 @@ dmypy.json
 *.pth
 data
 label
-models
 test
 .idea

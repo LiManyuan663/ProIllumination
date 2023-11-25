@@ -59,8 +59,7 @@ def predict(config, args):
             allim[0, 2, :] = heat_att
             allim = allim.transpose(0, 3, 1, 4, 2)
             allim = allim.reshape((h * p, w * q, c))
-
-            save_image(args.out_dir, allim, i, 1, filename=filename)
+            # save_image(args.out_dir, allim, i, 1, filename=filename)
             return allim
 
 def predict_remove_shadow(filename):
