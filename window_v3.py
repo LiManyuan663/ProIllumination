@@ -33,6 +33,7 @@ class ProIllumination():
         self.model = None
         if not self.model:
             opt = TrainOptions().parse()  # set CUDA_VISIBLE_DEVICES before import torch
+            opt.gpu_ids = []
             self.model = models.create_model(opt)
             self.model.switch_to_eval()
 
