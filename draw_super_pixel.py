@@ -13,7 +13,7 @@ class ShadowSuperPixel():
         self.mask_from_cnn = args['mask_from_cnn']
 
     def forward(self, image_index, args):
-        self.image = io.imread(self.image_path[image_index][0])
+        self.image = io.imread(image_index)
         self.mask = self.DSD(Image.fromarray(self.image)) == 255
         if len(self.mask.shape) > 2:
             self.seg = slic(rgb2lab(self.image), args['super_seg_count'], args['super_compactness'])
@@ -22,11 +22,11 @@ class ShadowSuperPixel():
         self._full_mask()
 
     def forward_2(self, image_id, args):
-        self.image = io.imread(self.image_path[image_id][0])
+        self.image = io.imread(image_id)
         if self.mask_from_cnn:
             self.mask = self.DSD(Image.fromarray(self.image)) == 255
         else:
-            self.mask = io.imread(self.image_path[image_id][1], as_gray=True)
+            self.mask = io.imread(image_id, as_gray=True)
             thre = filters.threshold_otsu(self.mask)
             self.mask = self.mask > thre
         if len(self.mask.shape) > 2:

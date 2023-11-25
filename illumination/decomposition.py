@@ -7,16 +7,19 @@ from illumination.options.train_options import TrainOptions
 from illumination.utils.saw_utils import srgb_to_rgb, rgb_to_chromaticity, resize_img_arr, load_img_arr
 
 
-def decom_single_image(image):
+def decom_single_image(image, model=None):
     """
 
     :param image: ndarry, [0,1], RGB, [w,h,c]
     :return:
     """
     # load model
-    opt = TrainOptions().parse()  # set CUDA_VISIBLE_DEVICES before import torch
-    model = models.create_model(opt)
-    model.switch_to_eval()
+    if not model:
+        opt = TrainOptions().parse()  # set CUDA_VISIBLE_DEVICES before import torch
+        if not torch.cuda.is_available():
+            opt.gpu_ids = []
+        model = models.create_model(opt)
+        model.switch_to_eval()
 
     # load image
     saw_img = resize_img_arr(image)
@@ -24,7 +27,11 @@ def decom_single_image(image):
     # prediction
     saw_img = np.transpose(saw_img, (2, 0, 1))
     input_ = torch.from_numpy(saw_img).unsqueeze(0).contiguous().float()
-    input_images = Variable(input_.cuda(), requires_grad=False)
+    if len(model.opt.gpu_ids) > 0:
+        input_images = Variable(input_.cuda(), requires_grad=False)
+    else:
+        input_images = Variable(input_.cpu(), requires_grad=False)
+
     prediction_R, prediction_S = model.netG.forward(input_images)
 
     '''Visualization'''  # https://github.com/zhengqili/CGIntrinsics/issues/1

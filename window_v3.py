@@ -1,5 +1,7 @@
 from tkinter import *
 from tkinter import filedialog
+
+import torch.cuda
 from PIL import Image, ImageTk
 import cv2
 import os
@@ -7,6 +9,8 @@ from draw_super_pixel import ShadowSuperPixel
 import numpy as np
 from shadowRemoval.predict import predict_remove_shadow
 from illumination.decomposition import decom_single_image
+from illumination.options.train_options import TrainOptions
+from illumination.models import models
 
 
 class ProIllumination():
@@ -28,6 +32,14 @@ class ProIllumination():
         self.raw_image = None
         # 标记结果
         self.label_result = None
+        # 光照估计模型
+        self.model = None
+        if not self.model:
+            opt = TrainOptions().parse()  # set CUDA_VISIBLE_DEVICES before import torch
+            if not torch.cuda.is_available():
+                opt.gpu_ids = []
+            self.model = models.create_model(opt)
+            self.model.switch_to_eval()
 
         # 显示鼠标坐标
         self.xy_text = StringVar()
@@ -78,32 +90,6 @@ class ProIllumination():
 
         self.master.mainloop()
 
-    def main_win(self):
-        frame_main = Frame(self.master)
-        frame_main.pack(fill=BOTH, expand=True)
-
-        # 显示原图的窗口
-        self.frame_raw_image = Frame(frame_main, relief=RIDGE, bg='grey', bd=5, borderwidth=4)
-        self.frame_raw_image.place(relwidth=0.5, relheight=0.5, relx=0, rely=0, anchor=NW)
-        self.canves = Canvas(self.frame_raw_image)
-        self.canves.pack(fill=BOTH, expand=True)
-
-        # 创建 frame_label_result 框架
-        self.frame_label_result = Frame(frame_main, relief=RIDGE, bg='grey', bd=5, borderwidth=4)
-        self.frame_label_result.place(relwidth=0.5, relheight=0.5, relx=1, rely=0, anchor=NE)
-        self.canves_result = Canvas(self.frame_label_result)
-        self.canves_result.pack(fill=BOTH, expand=True)
-
-        frame_r = Frame(frame_main, relief=RIDGE, bg='gray', bd=4)
-        frame_r.place(relwidth=0.5, relheight=0.5, relx=0, rely=1, anchor=SW)
-        canvas = Canvas(frame_r)
-        canvas.pack(fill=BOTH, expand=True)
-
-        frame_s = Frame(frame_main, relief=RIDGE, bg='gray', bd=4)
-        frame_s.place(relwidth=0.5, relheight=0.5, relx=1, rely=1, anchor=SE)
-        canvas = Canvas(frame_s)
-        canvas.pack(fill=BOTH, expand=True)
-
     def init_buttons(self):
         # 创建按钮并放置在顶部功能栏中
         read_image_button = Button(self.frame_top, text='Read Image', command=self.update_raw_image)
@@ -128,7 +114,8 @@ class ProIllumination():
         shadow_interact_button = Button(self.frame_buttons, text='Shadow Interact')
         shadow_interact_button.pack(side="top", anchor=N, pady=5, fill=X)
 
-        illu_predict_button = Button(self.frame_buttons, text='Illumination Estimation', command=self.intrinsic_decomposition)
+        illu_predict_button = Button(self.frame_buttons, text='Illumination Estimation',
+                                     command=self.intrinsic_decomposition)
         illu_predict_button.pack(side="top", anchor=N, pady=5, fill=X)
 
         # save_image_button = Button(self.frame_buttons, text='Reload Video', command=self.reload_video)
@@ -163,9 +150,15 @@ class ProIllumination():
     #     self.save_shadow_mask()
 
     def intrinsic_decomposition(self):
+        # load model
+        if not self.model:
+            opt = TrainOptions().parse()  # set CUDA_VISIBLE_DEVICES before import torch
+            self.model = models.create_model(opt)
+            self.model.switch_to_eval()
+
         img = Image.open(self.image_root)
         img = np.asarray(img).astype(float) / 255.0
-        img_R, img_S = decom_single_image(img)
+        img_R, img_S = decom_single_image(img, self.model)
 
         img_R, img_S = np.clip(255 * img_R, 0, 255).astype(np.uint8), np.clip(255 * img_S, 0, 255).astype(np.uint8)
         img_R, img_S = Image.fromarray(img_R), Image.fromarray(img_S)
@@ -192,7 +185,7 @@ class ProIllumination():
             self.shadow_mask = ShadowSuperPixel(image_root, args)
 
     def detect_shadow(self):
-        self.shadow_mask.forward(self.image_root, self.args)  # DSD 似乎仍然不行
+        self.shadow_mask.forward_2(self.image_root, self.args)  # DSD 似乎仍然不行
         self.canves.bind('<Button-1>', self.onLeftButtonDown)
         self.canves.bind('<Button-3>', self.onRightButtonDown)
         self.label_result = ImageTk.PhotoImage(Image.fromarray((self.shadow_mask.mask * 255).astype('uint8')))
