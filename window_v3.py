@@ -1,5 +1,7 @@
 from tkinter import *
 from tkinter import filedialog
+
+import torch.cuda
 from PIL import Image, ImageTk
 import os
 from draw_super_pixel import ShadowSuperPixel
@@ -33,7 +35,8 @@ class ProIllumination():
         self.model = None
         if not self.model:
             opt = TrainOptions().parse()  # set CUDA_VISIBLE_DEVICES before import torch
-            opt.gpu_ids = []
+            if not torch.cuda.is_available():
+                opt.gpu_ids = []
             self.model = models.create_model(opt)
             self.model.switch_to_eval()
 

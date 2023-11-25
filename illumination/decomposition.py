@@ -16,7 +16,8 @@ def decom_single_image(image, model=None):
     # load model
     if not model:
         opt = TrainOptions().parse()  # set CUDA_VISIBLE_DEVICES before import torch
-        opt.gpu_ids = []
+        if not torch.cuda.is_available():
+            opt.gpu_ids = []
         model = models.create_model(opt)
         model.switch_to_eval()
 
