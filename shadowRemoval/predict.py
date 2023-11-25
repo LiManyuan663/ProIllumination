@@ -34,33 +34,26 @@ def predict(config, args):
     with torch.no_grad():
         for i, batch in enumerate(tqdm(data_loader)):
             x = Variable(batch[0])
-            filename = batch[1][0]
             if args.cuda:
                 x = x.cuda()
 
             att, out = gen(x)
 
             h = 1
-            w = 3
+            w = 1
             c = 3
             p = config.width
             q = config.height
 
             allim = np.zeros((h, w, c, p, q))
-            x_ = x.cpu().numpy()[0]
             out_ = out.cpu().numpy()[0]
-            in_rgb = x_[:3]
             out_rgb = np.clip(out_[:3], 0, 1)
-            att_ = att.cpu().numpy()[0] * 255
-            heat_att = heatmap(att_.astype('uint8'))
 
-            allim[0, 0, :] = in_rgb * 255
-            allim[0, 1, :] = out_rgb * 255
-            allim[0, 2, :] = heat_att
+            allim[0, 0, :] = out_rgb * 255
             allim = allim.transpose(0, 3, 1, 4, 2)
             allim = allim.reshape((h * p, w * q, c))
-            # save_image(args.out_dir, allim, i, 1, filename=filename)
-            return allim
+            allim_display = np.clip(allim, 0, 255).astype(np.uint8)
+            return allim_display
 
 def predict_remove_shadow(filename):
     parser = argparse.ArgumentParser()
