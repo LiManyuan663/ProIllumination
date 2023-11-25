@@ -151,7 +151,7 @@ class ProIllumination():
     def intrinsic_decomposition(self):
         # load model
         if not self.model:
-            opt = TrainOptions().parse()  # set CUDA_VISIBLE_DEVICES before import torch
+            opt = TrainOptions().parse(print_info=False)  # set CUDA_VISIBLE_DEVICES before import torch
             self.model = models.create_model(opt)
             self.model.switch_to_eval()
 
