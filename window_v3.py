@@ -157,6 +157,8 @@ class ProIllumination():
 
         img = Image.open(self.image_root)
         img = np.asarray(img).astype(float) / 255.0
+        if img.shape[2] == 4:  # RGBA
+            img = img[..., :-1]
         img_R, img_S = decom_single_image(img, self.model)
 
         img_R, img_S = np.clip(255 * img_R, 0, 255).astype(np.uint8), np.clip(255 * img_S, 0, 255).astype(np.uint8)
@@ -191,7 +193,12 @@ class ProIllumination():
         self.canves_result_sample = self.canves_result.create_image(0, 0, anchor=NW, image=self.label_result)
 
     def reload_image_seg(self):
-        pass
+        self.canves.delete("all")
+        self.canves_result.delete("all")
+        self.canvas_r.delete("all")
+        self.canvas_s.delete("all")
+        self.update_raw_image()
+
         # self.init_image()
         # self.init_frame_label()
         # self.save_shadow_mask()
