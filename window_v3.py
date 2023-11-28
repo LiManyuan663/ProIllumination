@@ -188,20 +188,18 @@ class ProIllumination():
 
     def detect_shadow(self):
         self.shadow_mask.forward_2(self.image_root, self.args)  # DSD 似乎仍然不行
-        self.canves.bind('<Button-1>', self.onLeftButtonDown)
-        self.canves.bind('<Button-3>', self.onRightButtonDown)
+        # self.canves.bind('<Button-1>', self.onLeftButtonDown)
+        # self.canves.bind('<Button-3>', self.onRightButtonDown)
         self.label_result = ImageTk.PhotoImage(Image.fromarray((self.shadow_mask.mask * 255).astype('uint8')))
         self.canves_result_sample = self.canves_result.create_image(0, 0, anchor=NW, image=self.label_result)
 
 
     def remove_shadow(self):
-        # original_image = cv2.imread(self.image_root)
-        # processed_image = transferImg(original_image)
-        # # 将NumPy数组转换为PIL Image对象
-        # pil_image = Image.fromarray((processed_image * 255).astype('uint8'))
-        # # 将PIL Image对象转换为Tkinter PhotoImage对象
-        result = predict_remove_shadow(self.image_root)
-        pil_image = Image.fromarray((result * 255).astype('uint8'))
+        mask_root = filedialog.askopenfilename(title="Select mask", filetypes=[("Image files", "*.png;*.jpg;*.jpeg")])
+        result = predict_remove_shadow(self.image_root,mask_root)
+        # 将NumPy数组转换为PIL Image对象
+        pil_image = Image.fromarray(result)
+        # 将PIL Image对象转换为Tkinter PhotoImage对象
         self.label_result = ImageTk.PhotoImage(pil_image)
         # 在Canvas上显示处理后的图像
         self.canves_result_sample = self.canves_result.create_image(0, 0, anchor=NW, image=self.label_result)
