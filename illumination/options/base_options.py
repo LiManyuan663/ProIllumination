@@ -30,7 +30,8 @@ class BaseOptions():
                                  help='chooses which model to use. cycle_gan, one_direction_test, pix2pix, ...')
         # self.parser.add_argument('--which_direction', type=str, default='AtoB', help='AtoB or BtoA')
         self.parser.add_argument('--nThreads', default=2, type=int, help='# threads for loading data')
-        self.parser.add_argument('--checkpoints_dir', type=str, default='./illumination/checkpoints/', help='models are saved here')
+        self.parser.add_argument('--checkpoints_dir', type=str, default='./illumination/checkpoints/',
+                                 help='models are saved here')
         self.parser.add_argument('--norm', type=str, default='instance',
                                  help='instance normalization or batch normalization')
         self.parser.add_argument('--serial_batches', action='store_true',
@@ -45,7 +46,7 @@ class BaseOptions():
 
         self.initialized = True
 
-    def parse(self):
+    def parse(self, print_info=False):
         if not self.initialized:
             self.initialize()
         self.opt = self.parser.parse_args()
@@ -60,10 +61,11 @@ class BaseOptions():
 
         args = vars(self.opt)
 
-        print('------------ Options -------------')
-        for k, v in sorted(args.items()):
-            print('%s: %s' % (str(k), str(v)))
-        print('-------------- End ----------------')
+        if print_info:
+            print('------------ Options -------------')
+            for k, v in sorted(args.items()):
+                print('%s: %s' % (str(k), str(v)))
+            print('-------------- End ----------------')
 
         # save to the disk
         expr_dir = os.path.join(self.opt.checkpoints_dir, self.opt.name)

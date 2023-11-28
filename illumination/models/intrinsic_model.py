@@ -24,7 +24,7 @@ class Intrinsics_Model(BaseModel):
     def name(self):
         return 'Intrinsics_Model'
 
-    def __init__(self, opt):
+    def __init__(self, opt, print_info=False):
 
         which_model_netG = "pix2pix"  # "pix2pix"
 
@@ -60,8 +60,9 @@ class Intrinsics_Model(BaseModel):
                                             lr=0.0002, betas=(0.9, 0.999))
 
         print('---------- Networks initialized -------------')
-        networks.print_network(self.netG)
-        print('-----------------------------------------------')
+        if print_info:
+            networks.print_network(self.netG)
+            print('-----------------------------------------------')
 
     def set_input(self, input, targets):
         self.num_pair = input.size(0)
